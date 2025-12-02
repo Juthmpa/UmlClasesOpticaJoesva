@@ -1,0 +1,407 @@
+@startuml OpticaJoesvaUmlClases
+title OpticaJoesva - Arquitectura Completa con Patrones de Diseño
+
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam style strict
+skinparam Linetype ortho
+
+'----------------------------------------------------------------------------------------------------
+' 1. Capa del MODELO (Entidades de Negocio)
+'----------------------------------------------------------------------------------------------------
+package "com.optica.modelo" {
+  class Usuario {
+     - idUsuario : int
+     - username : String
+     - passwordHash : String
+     - nombreCompleto : String
+     - correo : String
+     - telefono : String
+     - estado : boolean
+     - rol : Rol
+     --- Métodos ---
+     + get/setIdUsuario()
+     + get/setUsername()
+     + get/setPasswordHash()
+     + get/setNombreCompleto()
+     + get/setCorreo()
+     + get/setTelefono()
+     + is/setEstado()
+     + get/setRol()
+     + checkPassword(password: String) : boolean
+    }
+
+   class Rol {
+     - idRol : int
+     - nombreRol : String
+     - descripcion : String
+     ---
+     + get/setIdRol()
+     + get/setNombreRol()
+     + get/setDescripcion()
+    }
+
+
+   class Permiso {
+     - idPermiso : int
+     - codigo : String
+     - nombre : String
+     - descripcion : String
+     ---
+     + get/setIdPermiso()
+     + get/setCodigo()
+     + get/setNombre()
+     + get/setDescripcion()
+    }
+
+   class Cliente {
+     - idCliente : int
+     - cedula : String
+     - nombres : String
+     - apellidos : String
+     - fechaNacimiento : LocalDate
+     - telefono : String
+     - direccion : String
+     - correo : String
+     ---
+     + get/setIdCliente()
+     + get/setCedula()
+     + get/setNombres()
+     + get/setApellidos()
+     + get/setFechaNacimiento()
+     + get/setTelefono()
+     + get/setDireccion()
+     + get/setCorreo()
+     + calcularEdad() : int
+    }
+
+   class Producto {
+     - idProducto : int
+     - codigo : String
+     - nombre : String
+     - tipoProducto : TipoProducto
+     - categoria : CategoriaProducto
+     - descripcion : String
+     - precio : BigDecimal
+     - stock : int
+     - material : MaterialLente
+     - tratamiento : TratamientoLente
+     ---
+     + get/set...()
+     + aplicarDescuento(porcentaje: BigDecimal) : BigDecimal
+    }
+
+   class Recibo {
+     - idRecibo : int
+     - cliente : Cliente
+     - usuario : Usuario
+     - fechaEmision : LocalDateTime
+     - total : BigDecimal
+     - abono : BigDecimal
+     - saldo : BigDecimal
+     - formaPago : FormaPago
+     - estado : String
+     ---
+     + get/set...()
+     + calcularSaldoPendiente() : BigDecimal
+     + agregarAbono(monto: BigDecimal)
+    }
+
+ ' Lookups (similares, solo métodos de acceso)
+
+    class Optometrista { 
+        - idOptometrista : int 
+        ---
+        + get/set...() 
+    }
+    class Cita { 
+        - idCita : int 
+        ---
+        + get/set...() 
+    }
+    class ValoracionVisual { 
+        - idValoracion : int 
+        ---
+        + get/set...() 
+    }
+    class Prescripcion { 
+        - idPrescripcion : int 
+        ---
+        + get/set...() 
+    }
+    class DetalleRecibo { 
+        - idDetalle : int 
+        ---
+        + get/set...() 
+    }
+    class OrdenTrabajo { 
+        - idOrden : int 
+        ---
+        + get/set...() 
+    }
+    class Auditoria { 
+        - idAuditoria : int 
+        ---
+        + get/set...() 
+    }
+    class TipoCertificado { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class EstadoOT { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class TipoOT { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class FormaPago { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class TipoProducto { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class CategoriaProducto { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class MaterialLente { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class TratamientoLente { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class EstadoCita { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+    class TipoPrescripcion { 
+        - id:int 
+        ---
+        + get/set...() 
+    }
+
+ ' Relaciones del modelo
+    Usuario "1" -- "0..*" Recibo
+    Usuario "1" -- "0..*" Auditoria
+    Usuario "0..*" -- "1" Rol
+    Cliente "1" -- "0..*" Cita
+    Cliente "1" -- "0..*" ValoracionVisual
+    Optometrista "1" -- "0..*" Cita
+    Optometrista "1" -- "0..*" ValoracionVisual
+    Cita "0..1" -- "0..1" ValoracionVisual
+    ValoracionVisual "1" -- "0..1" Prescripcion
+    Recibo "1" -- "1..*" DetalleRecibo
+    DetalleRecibo "*" -- "1" Producto
+    Rol "*" -- "*" Permiso
+    Recibo "*" -- "1" FormaPago
+' ... (otras relaciones lookup)
+}
+
+'----------------------------------------------------------------------------------------------------
+'2. Capa de ACCESO A DATOS (DAO - Data Access Object)
+'----------------------------------------------------------------------------------------------------
+'----------------------------------------
+' Declaración de clases base requeridas
+'----------------------------------------
+class Usuario
+class Cliente
+class Recibo
+class Producto
+class Cita
+class List
+class Connection
+
+'----------------------------------------
+'2. Capa de ACCESO A DATOS (DAO)
+'----------------------------------------
+package "com.optica.dao" {
+
+    interface IDAO<T> {
+        + obtenerPorId(id: int) : T
+        + obtenerTodos() : List
+        + insertar(t: T) : boolean
+        + actualizar(t: T) : boolean
+        + eliminar(id: int) : boolean
+    }
+
+    class UsuarioDAOImpl {
+        + obtenerPorId(id: int) : Usuario
+        + obtenerTodos() : List
+        + insertar(u: Usuario) : boolean
+        + actualizar(u: Usuario) : boolean
+        + eliminar(id: int) : boolean
+        + obtenerPorUsername(username: String) : Usuario
+        - getSQLConnection() : Connection
+    }
+    UsuarioDAOImpl ..|> IDAO
+    UsuarioDAOImpl o-- Usuario : accede a
+
+
+    class ClienteDAOImpl {
+        + obtenerPorCedula(cedula: String) : Cliente
+        + obtenerPorId(id: int) : Cliente
+        + obtenerTodos() : List
+        + insertar(c: Cliente) : boolean
+        + actualizar(c: Cliente) : boolean
+        + eliminar(id: int) : boolean
+    }
+    ClienteDAOImpl ..|> IDAO
+    ClienteDAOImpl o-- Cliente : accede a
+
+
+    class ReciboDAOImpl {
+        + gettersYSetters()
+    }
+    ReciboDAOImpl ..|> IDAO
+    ReciboDAOImpl o-- Recibo
+
+
+    class ProductoDAOImpl {
+        + gettersYSetters()
+    }
+    ProductoDAOImpl ..|> IDAO
+    ProductoDAOImpl o-- Producto
+
+
+    class CitaDAOImpl {
+        + gettersYSetters()
+    }
+    CitaDAOImpl ..|> IDAO
+    CitaDAOImpl o-- Cita
+}
+
+'----------------------------------------------------------------------------------------------------
+'3. Capa de CONTROLADORES (Servlets - MVC)
+'----------------------------------------------------------------------------------------------------
+package "com.optica.controlador" {
+    class LoginServlet extends HttpServlet {
+    - usuarioDAO : UsuarioDAOImpl
+    + init()
+    + doPost(request: HttpServletRequest, response: HttpServletResponse)
+    - validarLogin(request: HttpServletRequest) : Usuario
+    - enviarError(request: HttpServletRequest, response: HttpServletResponse, mensaje: String)
+    }
+    LoginServlet .> UsuarioDAOImpl : utiliza
+
+    class UsuarioServlet extends HttpServlet {
+    - usuarioDAO : UsuarioDAOImpl
+    + init()
+    + doGet(request: HttpServletRequest, response: HttpServletResponse)
+    + doPost(request: HttpServletRequest, response: HttpServletResponse)
+    - procesarPeticion(request: HttpServletRequest, response: HttpServletResponse)
+    - mostrarLista(request: HttpServletRequest, response: HttpServletResponse)
+    - mostrarFormulario(request: HttpServletRequest, response: HttpServletResponse)
+    - guardarUsuario(request: HttpServletRequest, response: HttpServletResponse)
+    - eliminarUsuario(request: HttpServletRequest, response: HttpServletResponse)
+    }
+    UsuarioServlet .> UsuarioDAOImpl : utiliza
+    UsuarioServlet .> Usuario : gestiona
+ 
+    class ClienteServlet extends HttpServlet {
+     - clienteDAO : ClienteDAOImpl
+     + init()
+     + doGet(request: HttpServletRequest, response: HttpServletResponse)
+     + doPost(request: HttpServletRequest, response: HttpServletResponse)
+    }
+    ClienteServlet .> ClienteDAOImpl : utiliza
+}
+
+'----------------------------------------------------------------------------------------------------
+'4. Capa de UTILIDADES y FACTORY METHOD
+'----------------------------------------------------------------------------------------------------
+package "com.optica.util" {
+    class ConexionMySQL {
+     - URL: String
+     - USER: String
+     - PASSWORD: String
+     - static instance : ConexionMySQL
+     - ConexionMySQL()
+     + static getInstance() : ConexionMySQL
+     + getConnection() : Connection
+     + closeConnection(conn: Connection)
+    }
+ 
+    class DAOFactory {
+     + static getUsuarioDAO() : UsuarioDAOImpl
+     + static getClienteDAO() : ClienteDAOImpl
+     + static getProductoDAO() : ProductoDAOImpl
+     ' ... Factory Methods para todos los DAOs
+    }
+    DAOFactory ..> UsuarioDAOImpl : crea
+    DAOFactory ..> ClienteDAOImpl : crea
+}
+ConexionMySQL ..> java.sql.Connection : crea
+
+'----------------------------------------------------------------------------------------------------
+'5. Patrón BUILDER (para objetos complejos)
+'----------------------------------------------------------------------------------------------------
+package "com.optica.builder" {
+    class ProductoBuilder {
+     - idProducto : int
+     - codigo : String
+     ' ... otros atributos
+     + withId(id: int) : ProductoBuilder
+     + withCodigo(codigo: String) : ProductoBuilder
+     + withNombre(nombre: String) : ProductoBuilder
+     + withPrecio(precio: BigDecimal) : ProductoBuilder
+     + build() : Producto
+    }
+    ProductoBuilder o--> Producto : construye
+}
+
+'----------------------------------------------------------------------------------------------------
+'6. Patrón FACADE (Fachada de Venta)
+'----------------------------------------------------------------------------------------------------
+package "com.optica.facade" {
+    class OperacionesVentaFacade {
+     - reciboDAO : ReciboDAOImpl
+     - detalleDAO : DetalleReciboDAOImpl
+     - productoDAO : ProductoDAOImpl
+     
+     + __OperacionesVentaFacade()__
+     + procesarNuevaVenta(recibo: Recibo, detalles: List<DetalleRecibo>) : boolean
+     + generarOrdenTrabajo(recibo: Recibo, cliente: Cliente) : OrdenTrabajo
+     - actualizarStock(detalles: List<DetalleRecibo>) : boolean
+    }
+    OperacionesVentaFacade .> ReciboDAOImpl : utiliza
+    OperacionesVentaFacade .> DetalleReciboDAOImpl : utiliza
+    OperacionesVentaFacade .> ProductoDAOImpl : utiliza
+}
+
+'----------------------------------------------------------------------------------------------------
+'7. Relaciones de Implementación y Uso
+'----------------------------------------------------------------------------------------------------
+'Los Servlets utilizan el Factory para obtener DAOs
+UsuarioServlet .> DAOFactory : usa
+ClienteServlet .> DAOFactory : usa
+
+'Los DAOs utilizan la conexión
+UsuarioDAOImpl .> ConexionMySQL : usa
+ClienteDAOImpl .> ConexionMySQL : usa
+ReciboDAOImpl .> ConexionMySQL : usa
+
+'El Facade utiliza los DAOs
+OperacionesVentaFacade --> ReciboDAOImpl
+OperacionesVentaFacade --> ProductoDAOImpl
+
+'Relación MVC Vista -> Controlador
+note "JSP/HTML\n(Vistas)" as Vistas
+Vistas .> UsuarioServlet : invoca
+UsuarioServlet .> Vistas : reenvía (MVC)
+
+@enduml
