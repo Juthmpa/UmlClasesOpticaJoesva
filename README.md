@@ -63,10 +63,10 @@ Se han aplicado varios patrones de diseño para estructurar componentes específ
 
 | Patrón              | Clase/Componente         | Propósito |
 |--------------------|---------------------------|-----------|
-| **Semifallo**      | `ConexionMySQL`           | Asegura que solo existe una instancia de la conexión a la BD, gestionando eficientemente los recursos. |
-| **Método de fábrica** | `DAOFactory`            | Centraliza la lógica de creación de las implementaciones DAO y desacopla a los controladores. |
-| **Constructor (Builder)** | `ProductoBuilder`   | Facilita la creación de objetos `Producto` complejos paso a paso. |
-| **Fachada**        | `OperacionesVentaFacade`  | Proporciona una interfaz simple para procesos complejos como una venta, interactuando con múltiples DAO. |
+| **Singleton**      | `ConexionMySQL`           | Asegura que solo existe una instancia de la conexión a la BD, gestionando eficientemente los recursos. |
+| **Factory Method** | `DAOFactory`            | Centraliza la lógica de creación de las implementaciones DAO y desacopla a los controladores. |
+| **Builder** | `ProductoBuilder`   | Facilita la creación de objetos `Producto` complejos paso a paso. |
+| **Facade**        | `OperacionesVentaFacade`  | Proporciona una interfaz simple para procesos complejos como una venta, interactuando con múltiples DAO. |
 
 ---
 
